@@ -1,0 +1,76 @@
+*{
+	box-sizing: border-box;
+
+}
+
+body{
+	background: rgb(92 107 192);
+}
+
+.game{
+	display: flex;
+	flex-direction: column;
+}
+
+h1{
+	font-size: 25px;
+	font-weight: bold;
+	text-align: center;
+	background: lightblue;
+}
+
+.players-display{
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+}
+
+.player1,
+.player2{
+	color: white;
+	font-size: 18px;
+}
+
+.main-container{
+	align-self: center;
+	display: flex;
+	justify-content: center;
+	gap: 25px;
+	margin: 10px 0;
+	padding: 10px 10px;
+	background: rgb(69 55 73);
+}
+
+.reset{
+	align-self: center;
+	padding: 5px 10px;
+	margin: 10px 0;
+	border-radius: 5px;
+	color: white;
+	background-color: rgb(55 38 100);
+}
+
+.container{
+	padding: 2px 3px;
+	width: 400px;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 20px;
+	background: rgb(174 149 197);
+	border: 2px solid;
+}
+
+.cell{
+	height: 120px;
+	padding: 3px 3px;
+	border-radius: 10px;
+	box-shadow: 2px 2px 5px gray;
+	background-color: rgb(98 76 103);
+}
+
+.message{
+	font-size: 35px;
+	color: red;
+	display: ;
+	position: relative;
+	bottom: 300px;
+}

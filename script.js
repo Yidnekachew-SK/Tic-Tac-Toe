@@ -18,95 +18,113 @@ const GameBoard = (function(){
 		gameboard = ["","","","","","","","",""];
 	}
 
-	const displayBoard = function(){
-		console.log(`
-		${gameboard[0]} | ${gameboard[1]} | ${gameboard[2]}
-		________
-		${gameboard[3]} | ${gameboard[4]} | ${gameboard[5]}
-		________
-		${gameboard[6]} | ${gameboard[7]} | ${gameboard[8]} \n`)		
-	}
-	return {getBoard, updateBoard, resetBoard, displayBoard}
-})()	
+	return {getBoard, updateBoard, resetBoard}
+})()
 
 const CreatePlayer = function(name,marker){
 	return{name,marker};
 }
 
 const GameController = (function(){
-	const player1 = CreatePlayer("sam", "x");
-	const player2 = CreatePlayer("qin", "o");
-	let currentPlayer = player1;
-	let gameOver = false;
+  const player1 = CreatePlayer("Player1", "X");
+  const player2 = CreatePlayer("Player2", "O");
+  let currentPlayer = player1;
+  let gameOver = false;
+  let selectedIndex = null;
 
-	const changeCurrentPlayer = function(){
-		if (currentPlayer === player1) {
-			currentPlayer = player2;
-		} else {
-			currentPlayer = player1;
-		}
-	}
+  const switchPlayer = function(){
+    currentPlayer = currentPlayer === player1 ? player2 : player1;
+  };
 
-	const playRound = function(){
-		let index = "";
-		do{
-			if(index.toUpperCase() === "Q"){
-				gameOver = true;
-				break;
-			}
-			index = prompt("Enter the cell number(0 - 8), Q to quit");
-		} while(!(index >= 0 && index < 9));
-		
-		if(gameOver){
-			console.log("Game Over!");
-			return
-		}
+  const playGame = function(index){
+    selectedIndex = index;
+    playRound();
+  };
 
-		const currentInput = GameBoard.updateBoard(index, currentPlayer.marker);
+  const playRound = function(){
+    if (gameOver || GameBoard.getBoard()[selectedIndex] !== "") return;
 
-		GameBoard.displayBoard();
+    GameBoard.updateBoard(selectedIndex, currentPlayer.marker);
+    DisplayController.updateDisplay();
 
-		if(checkWin(currentPlayer.marker)){
-      		console.log(`${currentPlayer.name} wins!`);
-      		gameOver = true;
-    	} else if(GameBoard.getBoard().every(cell => cell !== "")){
-      		console.log("It's a draw!");
-      		gameOver = true;
-   		} else if(!currentInput){
-   			console.log("cell taken! choose another cell");
-   			console.log(`Turn: ${currentPlayer.name} (${currentPlayer.marker})`)
-   		} else{
-      		changeCurrentPlayer();
-      		console.log(`Next turn: ${currentPlayer.name} (${currentPlayer.marker})`);
+    if (checkWin(currentPlayer.marker)) {
+      gameOver = true;
+      DisplayController.showWinner(currentPlayer.name);
+    } else if (isDraw()) {
+      gameOver = true;
+      DisplayController.showDraw();
+    } else {
+      switchPlayer();
+    }
+  };
 
-    	}
-	}
+  const checkWin = function(symbol){
+    const board = GameBoard.getBoard();
+    const winPatterns = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    return winPatterns.some(pattern =>
+      pattern.every(index => board[index] === symbol)
+    );
+  };
 
-	const checkWin = function(marker){
-    	const board = GameBoard.getBoard();
-    	const winCondition = [
-      	[0,1,2],[3,4,5],[6,7,8],
-      	[0,3,6],[1,4,7],[2,5,8],
-     	[0,4,8],[2,4,6]
-    	];
-    	return winCondition.some(pattern => pattern.every(index => board[index] === marker));
-  	}
+  const isDraw = function(){
+    return GameBoard.getBoard().every(cell => cell !== "");
+  };
 
-  	const resetGame = () => {
-    	GameBoard.resetBoard();
-    	currentPlayer = player1;
-    	gameOver = false;
-    	console.log("Game reset.");
-    	GameBoard.displayBoard();
-  	}
+  const resetGame = function(){
+    GameBoard.resetBoard();
+    currentPlayer = player1;
+    gameOver = false;
+    selectedIndex = null;
+    DisplayController.updateDisplay();
+    DisplayController.clearMessage();
+  };
 
-  	const playGame = function(){
-		while(!(gameOver)){
-			playRound();
-		}
-	}
+  return { playGame, resetGame};
+})();
 
-  	return {playGame, resetGame}
-})()
+const DisplayController = (function(){
+  const cells = document.querySelectorAll(".cell");
+  const message = document.querySelector(".message");
+  const resetButton = document.querySelector(".reset");
+
+  const updateDisplay = function(){
+    const board = GameBoard.getBoard();
+    cells.forEach((cell, index) => {
+      cell.textContent = board[index];
+      cell.style.fontSize = "30px";
+    });
+  };
+
+  const showWinner = function(winnerName){
+    message.textContent = `${winnerName} wins!`;
+  };
+
+  const showDraw = function(){
+    message.textContent = "It's a draw!";
+  };
+
+  const clearMessage = function(){
+    message.textContent = "";
+  };
+
+  const setEventListeners = function(){
+    cells.forEach((cell, index) => {
+      cell.addEventListener("click", () => {
+        GameController.playGame(index);
+      });
+    });
+
+    resetButton.addEventListener("click", () => {
+      GameController.resetGame();
+    });
+  };
+
+  return { updateDisplay, showWinner, showDraw, clearMessage, setEventListeners };
+})();
 
 
+DisplayController.setEventListeners();
